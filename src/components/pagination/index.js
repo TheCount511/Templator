@@ -5,12 +5,13 @@ const Pagination =({children, ...restProps})=>{
 }
 
 Pagination.PageNav =({children, ...restProps})=>{
-    return <PageNav {...restProps}>{children}</PageNav>
+    return <PageNav {...restProps} activeState={{...restProps}.activeState}>{children}</PageNav>
 }
 
 Pagination.PageNumbering =({children, ...restProps})=>{
     return <PageNumbering {...restProps}>
-        <PageNumber pageInView>{1}</PageNumber> <span>of</span> <PageNumber>{14}</PageNumber>
+        {console.log({...restProps}.numberofPages)}
+        <PageNumber pageInView>{{...restProps}.currentPage}</PageNumber> <span>of</span> <PageNumber>{{...restProps}.numberofPages}</PageNumber>
     </PageNumbering>
 }
 

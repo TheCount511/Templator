@@ -10,9 +10,11 @@ align-items: center;
 export const PageNav = styled.div`
 font-weight: 600;
 display: flex;
-cursor: pointer;
+cursor: ${({activeState})=> (activeState === 'active' ? 'pointer':"default")};
 span{
     padding: 7px;
+    color: ${({activeState})=> (activeState === 'inactive'&&'#b8b8b8')};
+    user-select: ${({activeState})=> (activeState === 'inactive'&&'none')};
 }
 `;
 

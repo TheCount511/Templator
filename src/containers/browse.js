@@ -8,10 +8,9 @@ import {
 } from "../components/";
 import BackwardIcon from "../assets/icons/arrow_back.svg";
 import ForwardIcon from "../assets/icons/arrow_forward.svg";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const BrowseContainer = () => {
-  const nums = [1, 2, 3, 4, 5, 6, 7];
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [showOrderDropdown, setShowOrderDropdown] = useState(false);
   const [showDateDropdown, setShowDateDropdown] = useState(false);
@@ -19,6 +18,49 @@ const BrowseContainer = () => {
   const ShowDropdown = (sampleState, setSampleState) => {
     setSampleState(() => !sampleState);
   };
+
+  const [post, setPost] = useState([]);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [postPerPage] = useState(9);
+
+  useEffect(() => {
+    const fetchApi = async () => {
+      const data = await fetch(
+        "https://front-end-task-dot-result-analytics-dot-fpls-dev.uc.r.appspot.com/api/v1/public/task_templates"
+      );
+      const dataJ = await data.json();
+      setPost(dataJ);
+    };
+    fetchApi();
+  }, []);
+
+  const lastPost = pageNumber * postPerPage;
+  const firstPost = lastPost - postPerPage;
+  const currentPost = post.slice(firstPost, lastPost);
+  const numberofPages = Math.ceil(post.length / postPerPage);
+
+  const PageNumber = () => {
+    if (numberofPages === 0) {
+      return 1;
+    } else {
+      return numberofPages;
+    }
+  };
+
+  console.log(numberofPages)
+
+  const [prevButtonState, setPrevButtonState] = useState("active");
+  const [nextButtonState, setNextButtonstate] = useState("active");
+
+  useEffect(() => {
+   if (pageNumber === 1) setPrevButtonState("inactive");
+   else  setPrevButtonState("active");
+  },[prevButtonState, pageNumber, numberofPages]);
+
+  useEffect(() => {
+    if (pageNumber >= numberofPages) setNextButtonstate("inactive");
+    else setNextButtonstate("active");
+   },[ nextButtonState, pageNumber, numberofPages]);
 
   return (
     <>
@@ -55,33 +97,52 @@ const BrowseContainer = () => {
         </Navbar.SortContainer>
       </Navbar>
       <BannerText
-        bannerText={
-          "Tada! Get Started with a free template. Can't find what you are looking for? Search from the 1000+ available templates"
-        }
+        bannerText={`Tada! Get Started with a free template. Can't find what you are looking for? Search from the ${
+          Math.ceil(post.length/ 2) 
+        }+ available templates`}
       />
       <Browseheader>
         <Browseheader.BrowseInfo>{`All`} Templates</Browseheader.BrowseInfo>
         <Browseheader.TemplateCount>
-          {`2000`} Templates
+          {post.length} Templates
         </Browseheader.TemplateCount>
       </Browseheader>
       <BrowsePane>
-        {nums.map((item, index) => (
+        {currentPost.map((item, index) => (
           <TemplateCard
-            title={`Alumni Membership Form Template ${index}`}
-            description={`Engage your alumni network better with this alumni registration form template. Embed This is your website...`}
+            key={`item ${index}`}
+            title={item.name}
+            description={item.body}
           />
         ))}
       </BrowsePane>
       <Pagination>
-        <Pagination.PageNav>
-          {2 > 1 && <img src={BackwardIcon} alt="back"></img>}
+        <Pagination.PageNav activeState={prevButtonState}
+          onClick={() => {
+            if (pageNumber !== 1) {
+              setPageNumber(pageNumber - 1);
+            }
+          }}
+        >
+          {pageNumber > 1 && <img src={BackwardIcon} alt="back"></img>}
           <span>Previous</span>
         </Pagination.PageNav>
-        <Pagination.PageNumbering currentPage={1} numberOfPages={15} />
-        <Pagination.PageNav>
+
+        <Pagination.PageNumbering
+          currentPage={pageNumber}
+          numberofPages={PageNumber()}
+        />
+        <Pagination.PageNav activeState={nextButtonState}
+          onClick={() => {
+            if (pageNumber !== numberofPages && numberofPages !== 0) {
+              setPageNumber(pageNumber + 1);
+            }
+          }}
+        >
           <span>Next</span>
-          {2 > 1 && <img src={ForwardIcon} alt="back"></img>}
+          {(pageNumber < numberofPages) && (
+            <img src={ForwardIcon} alt="forward"></img>
+          )}
         </Pagination.PageNav>
       </Pagination>
     </>
